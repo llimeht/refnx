@@ -33,6 +33,7 @@
 \newcommand{\MixedReflectModel}{\emph{MixedReflectModel }}
 \newcommand{\pip}{\emph{pip }}
 \newcommand{\NumPy}{\emph{NumPy }}
+\newcommand{\SciPy}{\emph{SciPy }}
 \newcommand{\Cython}{\emph{Cython }}
 \newcommand{\Jupyter}{\emph{Jupyter }}
 \newcommand{\ipywidgets}{\emph{ipywidgets }}
@@ -50,7 +51,7 @@ The powerful curve-fitting engine offers the choice of using a normal least-squa
 The whole package is designed with a focus on reproducible research; its use in \Jupyter notebooks (which includes a graphical user interface), and subsequent distribution of those notebooks as supplementary information, permits scientists to straightforwardly reproduce analyses made by others.
 \end{abstract}
 
-\subsection*{Introduction}
+\section*{Introduction}
 The use of specular X-ray and neutron reflectometry for morphological characterisation of thin films on the approximate size range [10, 5000]$\AA$ has exploded over the past years \cite{Wood2017, Daillant2009}. Most neutron and X-ray sources have instruments to perform reflectometry measurements, and there is an ongoing need for accessible software programs for users of those instruments to analyse their data in a straightforward fashion, including the co-refinement of multiple contrast datasets.  Several programs are available for this purpose, with a variety of different features \cite{Bjorck2007, Gerelli2016, Kienzle2011, Nelson2006}. These programs typically create a model of the interface, and incrementally refine the model against the data using least-squares, or use Bayesian approaches \cite{Sivia2006, 2010arXiv1008.4686H} to examine the posterior probability distribution of the parameters (i.e. the statistical variation of the parameters in a model).
 
 Given that there are more and more publications arising from the reflectometry technique, it is vital that the analysis is reproducible. Reproducibility in research is an underlying principle of science. Unfortunately, it is not always possible to reproduce the results of others \cite{Stark2018}, because there is frequently not enough information provided in journal articles to repeat the analyses. Even if the datasets and software packages used to analyse them are supplied in supplementary information (most often they are not), a comprehensive, ordered, set of instructions would need to be provided.
@@ -72,7 +73,7 @@ The posterior distribution, $p(\theta | I, D)$, is the probability of the parame
 The prior probability distribution, $p(\theta | I)$, is the state of knowledge that already exists about the parameters of interest, such as that obtained from other experiments.
 The likelihood (Equation~\ref{eqn:2}), $p(D | \theta, I)$, is the probability of the observed data, $y_n$ (with uncertainties $\sigma_n$), given the model parameters and other prior information.  The posterior probability is sampled by encoding the likelihood and prior distributions and using Markov Chain Monte Carlo (MCMC) techniques \cite{emcee}.
 
-\subsection*{Method}
+\section*{Method}
 \refnx is written in Python with an object-oriented design, Figure~\ref{fig:components}. As with \emph{Motofit} \cite{Nelson2006} it calculates reflectivity using the Abeles method \cite{Heavens1955} for specular reflection from a stratified medium.
 The building block of the analysis is the \Parameter object which represents a model value, whether it is allowed to vary in a fit, and a bounds attribute. The bounds are a probability distribution - the simplest bound being a uniform distribution which would set lower and upper limits for the parameter. This probability distribution is the prior probability for the parameter. Any of the \emph{scipy.stats} \cite{Jones2001-2017} continuous distributions, or distributions created by the user, can be used for this purpose. Algebraic relationships between \Parameter can be applied using constraints.
 
@@ -81,9 +82,8 @@ The \Structure object represents the interfacial model, comprising of individual
 The \Structure object is used to construct a \ReflectModel object. This object is responsible for calculating the resolution smeared reflectivity of the \Structure, scaling the data, and adding a linear background (via the scale and background Parameters). There are different types of smearing available - constant dQ/Q, point-by-point resolution smearing read from the dataset of interest, or via a smearing probability kernel of arbitrary shape \cite{Nelson2014}. The constant $dQ/Q$ and point-by-point smearing use Gaussian convolution, with $dQ$ representing the FWHM of a Gaussian approximation to the instrument resolution function \cite{Well2005}.
 
 The \Objective class uses the \ReflectModel and a dataset, \DataD, to calculate $\chi^2$, log-likelihood, log-prior, residuals, and the generative model.
-The \DataD object has \emph{x, y, y\_err, x\_err} attributes to represent Q, R, dR, dQ. The \DataD object can be constructed from a tuple of arrays representing the data, or by reading a three or four column plain-text datafile. A three column dataset represents Q ($\AA^{-1}$), R, dR (1 standard deviation). A four column dataset represents Q, R, dR, dQ ($\AA^{-1}$). Subclassing \DataD would allow other formats to be read. One example of this could be an wavelength dispersive file using $\Omega, \lambda$ data instead of Q; such as that used in energy scanned X-ray reflectometry, or sometimes produced by wavelength dispersive neutron reflectometers in order to account for absorption terms. In such a case \ReflectModel could be subclassed to make full use of this information.
+The \DataD object has \emph{x, y, y\_err, x\_err} attributes to represent $Q, R, dR, dQ$. The \DataD object can be constructed from a tuple of arrays representing the data, or by reading a three or four column plain-text datafile. A three column dataset represents Q ($\AA^{-1}$), R, dR (1 standard deviation). A four column dataset represents Q, R, dR, dQ ($\AA^{-1}$). Subclassing \DataD would allow other formats to be read. One example of this could be an wavelength dispersive file using $\Omega, \lambda$ data instead of Q; such as that used in energy scanned X-ray reflectometry, or sometimes produced by wavelength dispersive neutron reflectometers in order to account for absorption terms. In such a case \ReflectModel could be subclassed to make full use of this information.
 The \Objective can be given a \textbf{Transform} object to permit fitting as log-R vs Q, $RQ^4$ vs Q, or lin-R vs Q. Several \Objective can be combined to form a \textbf{GlobalObjective} for co-refinement. The object-oriented nature allows \Parameter, \Component to be reused throughout the setup, thereby facilitating co-refinement.
-For an example please see \textbf{lipid.ipynb} in the supporting information.
 
 The \Objective statistics are used directly by the \textbf{CurveFitter} class to perform least-square fitting or Bayesian MCMC of the system. \refnx uses the \emph{scipy} package for least-squares analysis (DifferentialEvolution, Levenberg Marquardt, LBFGSB - Limited Broyden–Fletcher–Goldfarb–Shanno with bounds) and the  \emph{emcee} package \cite{emcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. The likelihoods used in MCMC and least-squares assume that the measurement errors are normally distributed, Equation~\ref{eqn:2}. However, other types of measurement errors (e.g. Poissonian) could be implemented by a subclass of \Objective  overriding the log-likelihood method.
 Parallelisation of the sampling is done automatically, and can use MPI on a cluster for greater parallelisation. Visualisation of the samples produced by MCMC sampling is done using the \emph{corner} package \cite{corner} for scatter plot matrices. On the conclusion of a fit/sampling run each \Parameter is updated and given a standard error. For the sampling these represent the median and half the [15.87, 84.13] percentile range respectively; the latter approximates the standard deviation for a normally distributed statistic.
@@ -94,7 +94,7 @@ Parallelisation of the sampling is done automatically, and can use MPI on a clus
   \label{fig:components}
 \end{figure}
 
-To make it easy to create quick models, and to ease the learning curve, an ipywidgets \cite{ipywidgets} based fitting GUI can be created in a \Jupyter notebook, Figure~\ref{fig:gui}. This GUI builds slab based models for analysing a single dataset, but can be used as a stepping point for building more advanced models via the 'To code' code generation button. A fully functional web-based reflectometry analysis notebook is currently available \cite{Nelson2018}.
+To make it easy to create quick models, and to ease the learning curve, an ipywidgets \cite{ipywidgets} based fitting GUI can be created in a \Jupyter notebook, Figure~\ref{fig:gui}. This GUI builds slab based models for analysing a single dataset, but can be used as a stepping point for building more advanced models via the 'To code' code generation button. A fully functional web-based reflectometry analysis notebook is currently available \cite{Nelson2018}. For a comprehensive demonstration of multiple contrast co-refinement see \textbf{lipid.ipynb}, \textbf{lipid.pdf} in the supporting information.
 
 \begin{figure}
   \includegraphics[width=\linewidth]{./datasets/gui.png}
@@ -124,25 +124,40 @@ Neutron reflectometry is an ideal technique for the study of biologically releva
 \end{figure}
 
  
-\subsection*{Distribution and Modification}
+\section*{Distribution and Modification}
 Each submodule in \refnx possesses its own unit testing code for checking that the functions and classes in the module operate correctly, both individually and collectively. For example, there are tests that check that the reflectivity of a model is calculated correctly, or that the behaviour of a function is correct for the different possible inputs and code paths through it. Since the test suite is an integral part of the package each installation is testable.
  
  The source code for \refnx is held in a version controlled git repository hosted on github at https://www.github.com/refnx/refnx. Contributors create their own fork of the main \refnx repository, and create a feature branch to which they make modifications. They then submit a pull request (PR) against the main repository. The modifications made in the PR are checked on continuous integration (CI) web-services which run the test suite against a matrix of Python versions on the macOS, Linux and Windows operating systems. If the tests pass, and the changes are considered useful, then the features are merged into the main repository. When a sufficient number of features have accumulated a new release is made. Successive releases have an incrementing semantic version number which can be obtained from the installed package, with each release being given its own DOI.
 
- The recommended way of using \refnx is from a \conda environment (a package, dependency and environment manager for software), using the pre-compiled distributables on the \refnx conda-forge channel. These distributables are made as part of the release process using the same CI web-services used to test the code. The matrix of distributables cover the major Python versions currently in use, across the macOS/Windows/Linux operating systems. Alternatively the package can be installed from source, either directly from the git repository, or via pip from the version uploaded to PyPI (https://pypi.python.org/pypi/refnx). Building from source requires a C compiler and the \Cython and \NumPy packages to be installed. It's important to note that for reproducible research purposes both \conda and \pip can be used to install a specific version of \refnx.
- 
+ The recommended way of using \refnx is from a \conda environment (a package, dependency and environment manager for software), using the pre-compiled distributables on the \refnx conda-forge channel. These distributables are made as part of the release process using the same CI web-services used to test the code. The matrix of distributables cover the major Python versions currently in use, across the macOS/Windows/Linux operating systems. Alternatively the package can be installed from source, either directly from the git repository, or via \pip from the version uploaded to PyPI (https://pypi.python.org/pypi/refnx). Building from source requires a C compiler and the \Cython and \NumPy packages to be installed.
+  
 \refnx is released under the BSD permissive open source licence. In addition its dependencies are released under open source licences which mean that use is free of cost to the end user.
 
-\subsection*{Conclusions}\label{conclusions}
+\section*{Comments on reproducibility of analyses}
+In order for a given scattering analysis to be fully reproducible by others a general set of conditions need to be met:
+\begin{itemize}
+  \item the datasets used need to be deposited with a journal article, or be freely available.
+  \item the exact software environment needs to be recreateable.
+  \item the exact ordered set of steps taken during the analysis needs to be listed.
+\end{itemize} 
+Each of these points are frequently neglected. For example, the use of different software versions may change the output from an analysis. The use of a GUI program may not record the full set of steps, or options, applied by a user.
+Whilst it is unable to meet the first criteria by itself the use of \refnx in a \Jupyter notebook can fulfil the other two requirements, providing a little care is taken. The exact software environment can be recreated by noting down the versions of the software packages used during an analysis (\refnx, \SciPy, \NumPy, Python, etc). At a later date those exact versions can be installed in the same Python version using one of: the \conda package manager, by installing from the source at a given version tag in the git repository, or by \pip. \conda can use environment files to recreate a specific setup. An alternative way of recreating the environment is a virtual machine, such as Docker.
+The usefulness of open-source software in a git repository must be emphasised here - the ability to return to a specific software version/environment is often difficult with proprietary or closed source software; different versions can have modifications that can significantly change the output of an analysis. This has important implications for verifiability.
+%TODO finish verifiability...  Open source - the user can look at the code for correctness, with unit testing we can see if things are calculated correctly. With closed source we have no idea if there are major problems with certain parts of an algorithm.
+%\refnx relies on a fully open software stack, with full traceability of every single line of code.
+
+
+\section*{Conclusions}\label{conclusions}
 \refnx is a powerful tool for least-squares or Bayesian analysis of neutron and X-ray reflectometry data that is ideally usable for reproducible research with \Jupyter notebooks. Its features include: MCMC sampling of posterior distribution for parameters, structural models constructed from modular components with physically relevant parameterisation, interparameter constraints, mixed area models, co-refinement of multiple datasets, probability distributions for parameter bounds used directly for log-prior terms, and a \Jupyter/\ipywidgets GUI
 
-\subsection*{Acknowledgements}
-We acknowledge Anton Le Brun for the provision of the lipid bilayer datasets in the example.
-%TODO insert name
+\section*{Acknowledgements}
+We acknowledge Anton Le Brun for the provision of the lipid bilayer datasets in the example, and James Hester for comments made on the draft manuscript.
 
 \subsection*{Supporting information}
 \textbf{gui.ipynb} - \Jupyter notebook used to create the GUI screenshot.\\
-\textbf{lipid.ipynb} - \Jupyter notebook used for the lipid analysis example
+\textbf{lipid.ipynb} - \Jupyter notebook used for the lipid analysis example.\\
+\textbf{lipid.pdf} - PDF view of the \Jupyter notebook used for the lipid analysis example.\\
+\textbf{refnx-paper.yml} - \conda environment file to reproduce the analysis environment in this paper.
 
 \bibliography{main}{}
 \bibliographystyle{unsrt}
