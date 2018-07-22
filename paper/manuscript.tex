@@ -36,6 +36,7 @@
 \newcommand{\MixedReflectModel}{\textbf{MixedReflectModel}}
 \newcommand{\pip}{\emph{pip}}
 \newcommand{\emcee}{\emph{emcee}}
+\newcommand{\ptemcee}{\emph{ptemcee}}
 \newcommand{\NumPy}{\emph{NumPy}}
 \newcommand{\SciPy}{\emph{SciPy}}
 \newcommand{\Cython}{\emph{Cython}}
@@ -65,7 +66,7 @@ These notebooks are a mix of executable code cells and markup. An analysis perfo
 
 \refnx\ has a wide range of sophisticated modelling capabilities including: parameter constraints, description of prior probabilities on parameters using arbitrary probability distribution functions, modular construction of models using a variety of components that are user extensible, co-refinement of datasets, handling of patchy layers, a graphical user interface, resolution handling, Markov Chain Monte Carlo sampling of the posterior probability distributions for the parameters, model selection, etc.
 
-The posterior probability distribution in Bayesian statistics, Equation~\ref{eqn:1}, says the posterior probability distribution for the parameters is proportional to the product of the prior probability and the likelihood (or the sum of the log-probabilities).
+The posterior probability distribution for a parameter set in Bayesian statistics, Equation~\ref{eqn:1}, is proportional to the product of the prior probability and the likelihood (or the sum of the log-probabilities).
 
 \begin{gather} 
 \label{eqn:1}\ p(\theta | D, I) \propto p(\theta | I)\times p(D | \theta, I)\\
@@ -75,7 +76,7 @@ p(D | \theta, I) = -\frac{1}{2} \sum \left[\left(\frac{y_n - model} {\sigma_n}\r
 The prior distribution, $p(\theta | I)$, is the probability of a parameter, $\theta$, given preexisting knowledge of the system, $I$. For example, a prior could be a simple Uniform distribution that specifies a lower and upper bound, or a normal distribution that represents an experimentally derived value.
 The likelihood (Equation~\ref{eqn:2}), $p(D | \theta, I)$, is the probability of the observed data, $D$, given the model parameters and other prior information. It is calculated from the measured data, $y_n$ (with uncertainties $\sigma_n$), and the generative model, $model$.
 
-The posterior distribution, $p(\theta | I, D)$, is the probability of the parameters given the data and prior knowledge about the system.  The posterior probability is sampled by encoding the likelihood and prior distributions and using Markov Chain Monte Carlo (MCMC) techniques \cite{emcee}. At the end of an MCMC run the parameter set possesses a number of samples (called a 'chain'), whose statistics reveal the distribution and covariance of the parameters, the spread of the model around the data, and in a reflectometry context the range of structures that are consistent with the data.
+The posterior distribution, $p(\theta | I, D)$, is the probability of the parameters given the data and prior knowledge about the system.  The posterior probability is sampled by encoding the likelihood and prior distributions and using Markov Chain Monte Carlo (MCMC) techniques \cite{emcee, ptemcee}. At the end of an MCMC run the parameter set possesses a number of samples (called a 'chain'), whose statistics reveal the distribution and covariance of the parameters, the spread of the model around the data, and in a reflectometry context the range of structures that are consistent with the data.
 
 \section*{Method}
 \refnx\ is written in Python with an object-oriented design, Figure~\ref{fig:components}. As with \emph{Motofit} \cite{Nelson2006} it calculates reflectivity using the Abeles method \cite{Heavens1955} for specular reflection from a stratified medium.
@@ -89,7 +90,8 @@ The \Objective\ class uses the \ReflectModel\ and a dataset, \DataD, to calculat
 The \DataD\ object has \emph{x, y, y\_err, x\_err} attributes to represent $Q, R, dR, dQ$. The \DataD\ object can be constructed from a tuple of arrays representing the data, or by reading a three or four column plain-text datafile. A three column dataset represents Q ($\AA^{-1}$), R, dR (1 standard deviation). A four column dataset represents Q, R, dR, dQ ($\AA^{-1}$). Subclassing \DataD\ would allow other formats to be read. One example of this could be an wavelength dispersive file using $\Omega, \lambda$ data instead of Q; such as that used in energy scanned X-ray reflectometry, or sometimes produced by wavelength dispersive neutron reflectometers. In such a case \ReflectModel\ could be subclassed to make full use of this energy dispersive information.
 An \Objective\ can be given a \Transform\ object to permit fitting as log-R vs Q, $RQ^4$ vs Q, or lin-R vs Q. Several \Objective\ can be combined to form a \GlobalObjective\ for co-refinement. The object-oriented nature allows \Parameter\, \Component\ to be reused in in different \Objective, thereby facilitating co-refinement.
 
-The \Objective\ statistics are used directly by the \textbf{CurveFitter} class to perform least-square fitting or Bayesian MCMC of the system. \refnx\ uses the \SciPy\ package for least-squares analysis (DifferentialEvolution, Levenberg Marquardt, LBFGSB - Limited Broyden-€“Fletcher-€“Goldfarb-€“Shanno with bounds) and the  \emcee\ package \cite{emcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. The likelihoods used in MCMC and least-squares assume that the measurement errors are normally distributed, Equation~\ref{eqn:2}. However, other types of measurement errors (e.g. Poissonian) could be implemented by a subclass of \Objective\  overriding the log-likelihood method.
+The \Objective\ statistics are used directly by the \textbf{CurveFitter} class to perform least-square fitting or Bayesian MCMC of the system. \refnx\ uses the \SciPy\ package for least-squares analysis (DifferentialEvolution, Levenberg Marquardt, LBFGSB - Limited Broyden-€“Fletcher-€“Goldfarb-€“Shanno with bounds) and the \emcee\ and \ptemcee\ packages \cite{emcee, ptemcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. \ptemcee\ is a fork of \emcee\ that implements parallel tempering, for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher temperatures, while individual modes are efficiently explored by chains at lower temperatures.
+The likelihoods used in MCMC and least-squares assume that the measurement errors are normally distributed, Equation~\ref{eqn:2}. However, other types of measurement errors (e.g. Poissonian) could be implemented by a subclass of \Objective\ overriding the log-likelihood method.
 Parallelisation of the sampling is done automatically, and can use MPI on a cluster for greater parallelisation. Visualisation of the samples produced by MCMC sampling is done using the \corner\ package \cite{corner} for scatter plot matrices. On the conclusion of a fit/sampling run each \Parameter\ value is updated and given a standard error. For the sampling these represent the median and half the [15.87, 84.13] percentile range respectively; the latter approximating the standard deviation for a normally distributed statistic.
 
 \begin{figure}
@@ -136,7 +138,7 @@ The \Jupyter\ notebook used for the analysis, \emph{lipid.ipynb}, is available i
 
 \begin{figure}
   \includegraphics[width=\linewidth]{./supporting_information/corner}
-  \caption{Corner plot for the varying parameters of DMPC bilayers measured at three contrasts. The sampling took $\sim$12 minutes for 30 saved steps, corresponding to 6000 samples, with the steps being thinned by a factor of 100.}
+  \caption{Corner plot for the varying parameters of DMPC bilayers measured at three contrasts. The sampling took $\sim$13 minutes on a 3.2GHz quad-core computer for 30 saved steps, corresponding to 6000 samples, with the steps being thinned by a factor of 100.}
   \label{fig:corner}
 \end{figure}
 
