@@ -1,22 +1,19 @@
-\documentclass[12pt]{article}
-\usepackage{graphicx}
-\usepackage{subfigure}
+\documentclass[pdf,preprint]{iucr}
+\RequirePackage{graphicx}
+\journalcode{A}
+
+% \usepackage{subfigure}
 \usepackage{amsmath}
-\usepackage{geometry}
 \usepackage[separate-uncertainty=true]{siunitx}
-\geometry{legalpaper, portrait, margin=1in}
 \usepackage[version=4]{mhchem}
-\usepackage[affil-it]{authblk}
 
 \begin{document}
 \title{refnx - Neutron and X-ray reflectometry analysis in Python}
-\author[1,*]{Andrew Nelson}
-\author[2]{Stuart Prescott}
+\cauthor[a]{Andrew}{Nelson}{andrew.nelson@ansto.gov.au}{}
+\author[b]{Stuart~W.}{Prescott}
 
-\affil[1]{% 
- Australian Nuclear Science and Technology Organisation, Locked Bag 2001, Kirrawee DC, NSW 2232, Australia}
-\affil[2]{School of Chemical Engineering, University of New South Wales,  Sydney, NSW, Australia}
-\affil[*]{Corresponding author: Andrew.Nelson@ansto.gov.au}
+\aff[a]{Australian Nuclear Science and Technology Organisation, Locked Bag 2001, Kirrawee DC, NSW 2232 \country{Australia}}
+\aff[b]{School of Chemical Engineering, University of New South Wales,  Sydney, NSW, 2052 \country{Australia}}
 
 \date{\today}
 
@@ -46,6 +43,10 @@
 
 \maketitle
 
+\begin{synopsis}
+%TODO synopsis for ToC
+\end{synopsis}
+
 \begin{abstract}
 The \refnx\ package is designed for object-oriented model-based analysis of neutron and X-ray reflectometry data in Python. It is cross platform, and has been tested on Linux, macOS, and Windows.
 
@@ -56,7 +57,7 @@ The powerful curve-fitting engine offers the choice of using a normal least-squa
 The whole package is designed with a focus on reproducible research; its use in \Jupyter\ notebooks (which includes a graphical user interface), and subsequent distribution of those notebooks as supporting information, permits scientists to straightforwardly reproduce analyses made by others.
 \end{abstract}
 
-\section*{Introduction}
+\section{Introduction}
 The use of specular X-ray and neutron reflectometry for morphological characterisation of thin films on the approximate size range 10 to \SI{5000}{\angstrom} has exploded over the past years \cite{Wood2017, Daillant2009}. Most neutron and X-ray sources have instruments to perform reflectometry measurements, and there is an ongoing need for accessible software programs for users of those instruments to analyse their data in a straightforward fashion, including the co-refinement of multiple contrast datasets.  Several programs are available for this purpose, with a variety of different features \cite{Bjorck2007, Gerelli2016, Kienzle2011, Nelson2006}. These programs typically create a model of the interface, and incrementally refine the model against the data using least-squares, or use Bayesian approaches \cite{Sivia2006, 2010arXiv1008.4686H} to examine the posterior probability distribution of the parameters (i.e. the statistical variation of the parameters in a model).
 
 Given that there are more and more publications arising from the reflectometry technique, it is vital that the analysis is reproducible. Reproducibility in research is an underlying principle of science. Unfortunately, it is not always possible to reproduce the results of others \cite{Stark2018}, because there is frequently not enough information provided in journal articles to repeat the analyses. Even if the datasets and software packages used to analyse them are supplied in supporting information (most often they are not), a comprehensive, ordered, set of instructions would need to be provided.
@@ -79,7 +80,7 @@ The likelihood (Equation~\ref{eqn:2}), $p(D | \theta, I)$, is the probability of
 
 The posterior distribution, $p(\theta | I, D)$, is the probability of the parameters given the data and prior knowledge about the system.  The posterior probability is sampled by encoding the likelihood and prior distributions and using Markov Chain Monte Carlo (MCMC) techniques \cite{emcee, ptemcee}. At the end of an MCMC run the parameter set possesses a number of samples (called a 'chain'), whose statistics reveal the distribution and covariance of the parameters, the spread of the model around the data, and in a reflectometry context the range of structures that are consistent with the data.
 
-\section*{Method}
+\section{Method}
 \refnx\ is written in Python with an object-oriented design, Figure~\ref{fig:components}. As with \emph{Motofit} \cite{Nelson2006} it calculates reflectivity using the Abeles method \cite{Heavens1955} for specular reflection from a stratified medium.
 The building block of the analysis is the \Parameter\ object which represents a model value, whether it is allowed to vary in a fit, and a bounds attribute. The bounds are a probability distribution representing the prior. Any of the \emph{scipy.stats} \cite{Jones2001-2017} continuous distributions, or distributions created by the user, can be used for this purpose. Algebraic relationships between \Parameter\ can be applied using constraints.
 
@@ -92,12 +93,12 @@ The \DataD\ object has \emph{x, y, y\_err, x\_err} attributes to represent $Q$, 
 An \Objective\ can be given a \Transform\ object to permit fitting as $\log R$ vs $Q$, $RQ^4$ vs $Q$, or $R$ vs $Q$. Several \Objective\ can be combined to form a \GlobalObjective\ for co-refinement. The object-oriented nature allows \Parameter\, \Component\ to be reused in in different \Objective, thereby facilitating co-refinement.
 %FIXME: above said 'lin-R' is that linear or natural log (\ln)
 
-The \Objective\ statistics are used directly by the \textbf{CurveFitter} class to perform least-square fitting or Bayesian MCMC of the system. \refnx\ uses the \SciPy\ package for least-squares analysis (DifferentialEvolution, Levenberg Marquardt, LBFGSB - Limited Broyden--Fletcher--Goldfarb--Shanno with bounds) and the \emcee\ and \ptemcee\ packages \cite{emcee, ptemcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. \ptemcee\ is a fork of \emcee\ that implements parallel tempering, for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher temperatures, while individual modes are efficiently explored by chains at lower temperatures.
+The \Objective\ statistics are used directly by the \textbf{CurveFitter} class to perform least-square fitting or Bayesian MCMC of the system. \refnx\ uses the \SciPy\ package for least-squares analysis (DifferentialEvolution, Levenberg--Marquardt, LBFGSB - Limited Broyden--Fletcher--Goldfarb--Shanno with bounds) and the \emcee\ and \ptemcee\ packages \cite{emcee, ptemcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. \ptemcee\ is a fork of \emcee\ that implements parallel tempering, for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher temperatures, while individual modes are efficiently explored by chains at lower temperatures.
 The likelihoods used in MCMC and least-squares assume that the measurement errors are normally distributed, Equation~\ref{eqn:2}. However, other types of measurement errors (e.g. Poissonian) could be implemented by a subclass of \Objective\ overriding the log-likelihood method.
 Parallelisation of the sampling is done automatically, and can use MPI on a cluster for greater parallelisation. Visualisation of the samples produced by MCMC sampling is done using the \corner\ package \cite{corner} for scatter plot matrices. On the conclusion of a fit/sampling run each \Parameter\ value is updated and given a standard error. For the sampling these represent the median and half the [15.87, 84.13] percentile range respectively; the latter approximating the standard deviation for a normally distributed statistic.
 
 \begin{figure}
-  \includegraphics[width=\linewidth]{components}
+  \includegraphics[width=175mm]{components}
   \caption{Schematic showing the relationship between classes that make up a typical reflectometry curve-fitting problem.}
   \label{fig:components}
 \end{figure}
@@ -105,12 +106,12 @@ Parallelisation of the sampling is done automatically, and can use MPI on a clus
 To make it easy to create quick models, and to ease the learning curve, an ipywidgets \cite{ipywidgets} based fitting graphical user interface (GUI) can be created in a \Jupyter\ notebook, Figure~\ref{fig:gui}. This GUI builds slab based models for analysing a single dataset, but can be used as a stepping point for building more advanced models via the 'To code' code generation button. A fully functional web-based reflectometry analysis notebook is currently available \cite{Nelson2018}. For a comprehensive demonstration of multiple contrast co-refinement see the annotated notebook in the supporting information.
 
 \begin{figure}
-  \includegraphics[width=\linewidth]{./supporting_information/gui.png}
-  \caption{Screenshot of the \Jupyter\/\ipywidgets\ GUI. \Jupyter\ notebook available in supporting information.}
+  \includegraphics[width=85mm]{./supporting_information/gui.png}
+  \caption{Screenshot of the \Jupyter/\ipywidgets\ GUI. \Jupyter\ notebook available in supporting information.}
   \label{fig:gui}
 \end{figure}
 
-\subsection*{Example}
+\subsection{Example}
 Neutron reflectometry is an ideal technique for the study of biologically relevant lipid membrane mimics and their interactions with proteins, etc. Multiple contrast variation measurements are necessary to reduce modelling ambiguity (due to loss of phase information in the scattering experiment) and improve the ability to determine the structure of various components in the system. The gold standard approach for analysis of these datasets is co-refinement with a common model, and to parameterise the model in terms of chemically relevant parameters, such as area per molecule. Sometimes a patchy coverage (distinct to low area per molecule) necessitates the use of an (incoherent) sum of reflectivities from different areas. \refnx\ has functionality for all these requirements, such as the \LipidLeaflet\ component for describing the head and tail groups of a lipid leaflet, and \MixedReflectModel. It is straightforward to develop/modify new components for different structural functionality, a consequence of the object-oriented approach.
 
 The parameters used in the \LipidLeaflet\ component are: area per molecule ($A$), thicknesses for each of the head and tail regions ($t_x$), sums of scattering lengths of the head and tail regions ($b_x$), partial volumes of the head and tail groups ($V_x$), roughness between head and tail region, and SLDs of the solvents for the head and tail group ($\rho_{x, solv}$). The overall SLD of each of the head and tail group regions are given by Equations~\ref{eqn:3} and \ref{eqn:4}. The approach used in this component ensures that there is a 1:1 correspondence of heads to tails. 
@@ -130,23 +131,21 @@ The \Jupyter\ notebook used for the analysis, \emph{lipid.ipynb}, is available i
 
 \begin{figure}%
 \centering
-\subfigure{%
 \label{fig:global_fit}%
-\includegraphics[width=5in]{./supporting_information/global_fit.png}}\hspace{1em}%
-\subfigure{%
+\includegraphics[width=85mm]{./supporting_information/global_fit.png}%
 \label{fig:d2o_sld_spread}%
-\includegraphics[width=5in]{./supporting_information/d2o_sld_spread.png}}\\%
+\includegraphics[width=85mm]{./supporting_information/d2o_sld_spread.png}
 \caption{a) Reflectivity from a DMPC bilayer measured at three contrasts, with median in red, and 500 samples from the posterior distribution. Dataset for \ce{Si} match offset by 0.1, \ce{H_2O} contrast offset by 0.001. b) SLD profile of the \ce{D_2O} model showing 500 samples from the posterior distribution, as well as the median.}
 \end{figure}
 
 \begin{figure}
-  \includegraphics[width=\linewidth]{./supporting_information/corner}
+  \includegraphics[width=175mm]{./supporting_information/corner.png}
   \caption{Corner plot for the varying parameters of DMPC bilayers measured at three contrasts. The sampling took $\sim$13 minutes on a 3.2GHz quad-core computer for 30 saved steps, corresponding to 6000 samples, with the steps being thinned by a factor of 100.}
   \label{fig:corner}
 \end{figure}
 
  
-\section*{Distribution and Modification}
+\section{Distribution and Modification}
 Each submodule in \refnx\ possesses its own unit testing code for checking that the functions and classes in the module operate correctly, both individually and collectively. For example, there are tests that check that the reflectivity of a model is calculated correctly, or that the behaviour of a function is correct for the different possible inputs and code paths through it. Since the test suite is an integral part of the package each installation is testable. In addition, there is a benchmarking suite to track changes in performance, specifically the speed of critical calculations, over time.
  
 The source code for \refnx\ is held in a version controlled git repository hosted on github at https://www.github.com/refnx/refnx. Contributors create their own fork of the main \refnx\ repository, and create a feature branch to which they make modifications. They then submit a pull request (PR) against the main repository. The modifications made in the PR are checked on continuous integration (CI) web-services which run the test suite against a matrix of Python versions on the macOS, Linux and Windows operating systems. If the tests pass, and the changes are considered useful, then the features are merged into the main repository. When a sufficient number of features have accumulated a new release is made. Successive releases have an incrementing semantic version number which can be obtained from the installed package, with each release being given its own DOI.
@@ -155,7 +154,7 @@ The source code for \refnx\ is held in a version controlled git repository hoste
   
 \refnx\ is released under the BSD permissive open source licence. In addition its dependencies are released under open source licences which mean that use is free of cost to the end user.
 
-\section*{Comments on reproducibility of analyses}
+\section{Comments on reproducibility of analyses}
 In order for a given scattering analysis to be fully reproducible by others a general set of conditions need to be met:
 \begin{itemize}
   \item the datasets used need to be deposited with a journal article, or be freely available.
@@ -167,18 +166,18 @@ Whilst it is unable to meet the first criteria by itself, the use of \refnx\ in 
 The usefulness of open-source software in a git (or other version controlled) repository must be emphasised here. With closed source or proprietary software the ability to return to a specific software version/environment can be difficult, different versions can have modifications that can change the output of an analysis. In addition accessibility (due to cost, etc) to the wider scientific community can also hinder reproducibility.
 Moreover, there are important ramifications for verifiability. \refnx\ is based on a fully open software stack, with good unit test coverage. The user can run tests for each component and inspect parts for correctness. For example, the behaviour of the reflectivity calculation in \refnx\ is checked from first principles in the test suite; and can be done now and in several years time. If problems are discovered, they can be corrected. With a closed source program such checking is harder, one has to examine the inputs/outputs of a black box without knowing what is happening in between, making it harder to find errors; one has to rely on trust. Whilst this may not be an issue for relatively simple calculations, it may be for complex algorithms, such as those involved with minimisation.
 
-\section*{Conclusions}\label{conclusions}
+\section{Conclusions}\label{conclusions}
 \refnx\ is a powerful tool for least-squares or Bayesian analysis of neutron and X-ray reflectometry data that is ideally usable for reproducible research with \Jupyter\ notebooks, and with extensibility in mind. Its features include: MCMC sampling of posterior distribution for parameters, structural models constructed from modular components with physically relevant parameterisation, algebraic inter-parameter constraints, mixed area models, co-refinement of multiple datasets, probability distributions for parameter bounds used directly for log-prior terms, and a (\Jupyter\ ) \ipywidgets\ GUI.
 
-\section*{Acknowledgements}
+\section{Acknowledgements}
 We acknowledge Anton Le Brun (ANSTO) for the provision of the lipid bilayer datasets in the example, James Hester (ANSTO) for comments made on the draft manuscript, and Andrew McCluskey (Bath University) and Isaac Gresham (UNSW) for important feedback on \refnx\ development.
 
-\subsection*{Supporting information}
+\subsection{Supporting information}
 \textbf{gui.ipynb} - \Jupyter\ notebook used to create the GUI screenshot.\\
 \textbf{lipid.ipynb} - \Jupyter\ notebook used for the lipid analysis example.\\
 \textbf{lipid.pdf} - PDF view of the \Jupyter\ notebook used for the lipid analysis example.\\
 \textbf{refnx-paper.yml} - \conda\ environment file to reproduce the analysis environment in this paper.
 
 \bibliography{main}{}
-\bibliographystyle{unsrt}
+\bibliographystyle{iucr}
 \end{document}
