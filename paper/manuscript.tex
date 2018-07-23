@@ -1,6 +1,6 @@
 \documentclass[pdf,preprint]{iucr}
 \RequirePackage{graphicx}
-\journalcode{A}
+\journalcode{J}
 
 % \usepackage{subfigure}
 \usepackage{amsmath}
@@ -19,6 +19,7 @@
 
 \newcommand{\refnx}{\emph{refnx}}
 \newcommand{\Objective}{\textbf{Objective}}
+\newcommand{\CurveFitter}{\textbf{CurveFitter}}
 \newcommand{\GlobalObjective}{\textbf{GlobalObjective}}
 \newcommand{\Parameter}{\textbf{Parameter}}
 \newcommand{\Structure}{\textbf{Structure}}
@@ -93,7 +94,7 @@ The \DataD\ object has \emph{x, y, y\_err, x\_err} attributes to represent $Q$, 
 An \Objective\ can be given a \Transform\ object to permit fitting as $\log R$ vs $Q$, $RQ^4$ vs $Q$, or $R$ vs $Q$. Several \Objective\ can be combined to form a \GlobalObjective\ for co-refinement. The object-oriented nature allows \Parameter\, \Component\ to be reused in in different \Objective, thereby facilitating co-refinement.
 %FIXME: above said 'lin-R' is that linear or natural log (\ln)
 
-The \Objective\ statistics are used directly by the \textbf{CurveFitter} class to perform least-square fitting or Bayesian MCMC of the system. \refnx\ uses the \SciPy\ package for least-squares analysis (DifferentialEvolution, Levenberg--Marquardt, LBFGSB - Limited Broyden--Fletcher--Goldfarb--Shanno with bounds) and the \emcee\ and \ptemcee\ packages \cite{emcee, ptemcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. \ptemcee\ is a fork of \emcee\ that implements parallel tempering, for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher temperatures, while individual modes are efficiently explored by chains at lower temperatures.
+The \Objective\ statistics are used directly by the \CurveFitter\ class to perform least-square fitting or Bayesian MCMC of the system. \refnx\ uses the \SciPy\ package for least-squares analysis (DifferentialEvolution, Levenberg--Marquardt, LBFGSB - Limited Broyden--Fletcher--Goldfarb--Shanno with bounds) and the \emcee\ and \ptemcee\ packages \cite{emcee, ptemcee} for affine invariant MCMC ensemble sampling of the posterior distribution of the parameters. \ptemcee\ is a fork of \emcee\ that implements parallel tempering, for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher temperatures, while individual modes are efficiently explored by chains at lower temperatures.
 The likelihoods used in MCMC and least-squares assume that the measurement errors are normally distributed, Equation~\ref{eqn:2}. However, other types of measurement errors (e.g. Poissonian) could be implemented by a subclass of \Objective\ overriding the log-likelihood method.
 Parallelisation of the sampling is done automatically, and can use MPI on a cluster for greater parallelisation. Visualisation of the samples produced by MCMC sampling is done using the \corner\ package \cite{corner} for scatter plot matrices. On the conclusion of a fit/sampling run each \Parameter\ value is updated and given a standard error. For the sampling these represent the median and half the [15.87, 84.13] percentile range respectively; the latter approximating the standard deviation for a normally distributed statistic.
 
