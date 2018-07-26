@@ -126,7 +126,7 @@ A browser-based graphical user interface (GUI) \cite{ipywidgets} is available fo
 Neutron reflectometry is an ideal technique for the study of biologically relevant lipid membrane mimics and their interactions with proteins, etc. Multiple contrast variation measurements are necessary to reduce modelling ambiguity (due to loss of phase information in the scattering experiment) and improve the ability to determine the structure of various components in the system. The gold standard approach for analysis of these datasets is co-refinement with a common model, and to parameterise the model in terms of chemically relevant parameters, such as the area per molecule \cite{campbell2018}. Sometimes a patchy coverage (distinct to low area per molecule) necessitates the use of an (incoherent) sum of reflectivities from different areas. \refnx\ has functionality for all these requirements, such as the \LipidLeaflet\ component for describing the head and tail groups of a lipid leaflet, and \MixedReflectModel\ to account for patchiness.
 
 The parameters used in the \LipidLeaflet\ component are: area per molecule ($A$), thicknesses for each of the head and tail regions ($t_x$), sums of scattering lengths of the head and tail regions ($b_x$), partial volumes of the head and tail groups ($V_x$), roughness between head and tail region, and SLDs of the solvents for the head and tail group ($\rho_{x,\mathrm{solv}}$). The overall SLD of each of the head and tail group regions are given by:
-%TODO cite a paper which gives a whole load of volumes?
+
 \begin{gather} 
 \label{eqn:3} \phi_{x} = \frac{V_x}{At_x}\\
 \rho_x =  \phi_{x} \frac{b_x}{V_x} + (1 - \phi_{x})\rho_{x,\mathrm{solv}} \label{eqn:4}
@@ -141,19 +141,19 @@ The \Jupyter\ notebook used for the analysis, \emph{lipid.ipynb}, is available i
 \begin{figure}%
 \centering
 \label{fig:global_fit}%
-\includegraphics[width=85mm]{./supporting_information/global_fit.png}%
+\includegraphics[width=85mm]{./supporting_information/global_fit.pdf}%
 %TODO: series labels on plots; delete points?;
 %TODO: artefact in high q d2o fit; truncate at Q = 0/35 ?
 %TODO: h2o fit isn't great about 0.20
 
-\includegraphics[width=85mm]{./supporting_information/d2o_sld_spread.png}
+\includegraphics[width=85mm]{./supporting_information/d2o_sld_spread.pdf}
 
 %TODO add (a) and (b)
 \caption{a) Neutron reflectivity from a DMPC bilayer supported on a silicon crystal measured at three contrasts, with 500 samples from the posterior distribution in grey and median of the distribution in red. Data for the hdmix and \ce{H_2O} contrast offset by 0.1 and 0.001 respectively. b) SLD profile of the \ce{D_2O} model showing 500 samples from the posterior distribution, as well as the median in red. It is seen that the uncertainty in the reflectivity at high $Q$ is associated with an uncertainty in SLD profile at the lipid-\ce{D2O} interface.}
 \end{figure}
 
 \begin{figure}
-  \includegraphics[width=175mm]{./supporting_information/corner.png}
+  \includegraphics[width=175mm]{./supporting_information/corner.pdf}
   \caption{Corner plot for the varying parameters of DMPC bilayers measured at three contrasts. The sampling took $\sim$13 minutes on a \SI{3.2}{GHz} quad-core computer for 30 saved steps, corresponding to 6000 samples, with the steps being thinned by a factor of 100. A larger scale image is available in supporting information.}
   \label{fig:corner}
 \end{figure}
@@ -203,9 +203,9 @@ We acknowledge Anton Le Brun (ANSTO) for the provision of the lipid bilayer data
 \textbf{lipid.ipynb} - \Jupyter\ notebook used for the lipid analysis example.\\
 \textbf{lipid.pdf} - PDF view of the \Jupyter\ notebook used for the lipid analysis example.\\
 \textbf{corner.pdf} - larger scale image of the corner plot.\\
-\textbf{c_PLP0016596.dat}, \textbf{c_PLP0016601.dat}, \textbf{c_PLP0016607.dat} - example lipid datasets.\\
+\textbf{c\_PLP0016596.dat}, \textbf{c\_PLP0016601.dat}, \textbf{c\_PLP0016607.dat} - example lipid datasets.\\
 \textbf{reduction.ipynb} - notebook for reducing example datasets.\\
-\textbf{raw_data.zip} - raw files for the example datasets.\\
+\textbf{raw\_data.zip} - raw files for the example datasets.\\
 \textbf{refnx-paper.yml} - \conda\ environment file to reproduce the analysis environment in this paper.
 
 \bibliography{main}{}
