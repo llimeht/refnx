@@ -175,22 +175,16 @@ The \Jupyter\ notebook used for the analysis, \emph{lipid.ipynb}, is available i
 \centering
 \label{fig:global_fit}%
 \includegraphics[width=85mm]{./supporting_information/global_fit.pdf}%
-%TODO: series labels on plots; delete points?;
-%FIXME: not clear what you mean by the above two points.
 
-%FIXME: artefact in high q d2o fit; truncate at Q = 0/35 - I truncated the data at 0.3.
-%FIXME: h2o fit isn't great about 0.20 - tried lots of things to improve this (including patchiness), nothing seems to work
 
 \includegraphics[width=85mm]{./supporting_information/d2o_sld_spread.pdf}
 
-%TODO add (a) and (b)
-%FIXME - where should I add (a) and (b), on the graph?
-\caption{a) Neutron reflectivity from a DMPC bilayer supported on a silicon crystal, measured at three contrasts, with 500 samples from the posterior distribution in grey and median of the distribution in red. Data for the hdmix and \ce{H_2O} contrast offset by 0.1 and 0.001 respectively. b) SLD profile of the \ce{D_2O} model showing 500 samples from the posterior distribution, as well as the median in red. It is seen that the uncertainty in the reflectivity at high $Q$ is associated with an uncertainty in SLD profile at the lipid-\ce{D2O} interface.}
+\caption{a) Neutron reflectivity from a DMPC bilayer supported on a silicon crystal, measured at three contrasts, with 500 samples from the posterior distribution in grey and median of the distribution in red. Data for the hdmix and \ce{H_2O} contrast offset by 0.1 and 0.01 respectively. b) SLD profile of the \ce{D_2O} model showing 500 samples from the posterior distribution, as well as the median in red. It is seen that the uncertainty in the reflectivity at high $Q$ is associated with an uncertainty in SLD profile at the lipid-\ce{D2O} interface.}
 \end{figure}
 
 \begin{figure}
   \includegraphics[width=175mm]{./supporting_information/corner.pdf}
-  \caption{Corner plot for the varying parameters of DMPC bilayers supported on a silicon crystal, measured at three contrasts. The sampling took $\sim$\SI{41}{\minute} on a \SI{2.8}{GHz} quad-core computer for 16 saved steps, corresponding to 4800 samples, with the steps being thinned by a factor of 500. A larger scale image is available in supporting information.}
+  \caption{Corner plot for the varying parameters of DMPC bilayers supported on a silicon crystal, measured at three contrasts. The sampling took $\sim$\SI{33}{\minute} on a \SI{2.8}{GHz} quad-core computer for 20 saved steps, corresponding to 4000 samples, with the steps being thinned by a factor of 400. A larger scale image is available in supporting information.}
   \label{fig:corner}
 \end{figure}
 
