@@ -100,7 +100,7 @@ Any of the \emph{scipy.stats} \cite{Jones2001-2017} continuous distributions, or
 \subsection{Structure representation}
 
 The \Structure\ object represents the interfacial model, assembled from individual \Component\ objects in series. Each \Component\ represents a subset of the interface and selected attributes of the \Component\ can be described by physically relevant \Parameter\ objects. The simplest and most familiar \Component\ is a \Slab, which has a uniform scattering length density (SLD), thickness, roughness, and volume fraction of solvent. The simplest models are simply a series of \Slab\ objects.
-More sophisticated components include \LipidLeaflet\ (a lipid monolayer, or one-half of a lipid bilayer) and \Spline\ (for freeform modelling of an SLD profile using spline interpolation).
+More sophisticated components include \LipidLeaflet\ (a lipid monolayer, or one-half of a lipid bilayer) and \Spline\ (for free-form modelling of an SLD profile using spline interpolation).
 It is straightforward to develop/modify new components for different structural functionality, a consequence of the program design.
 
 To include further prior knowledge of the real sample into the model,
@@ -137,7 +137,6 @@ At the end of an MCMC run, the parameter set possesses a number of samples (call
 The chain statistics are used to update each \Parameter\ value, and assign a standard uncertainty. For the sampling, these represent the median and half the $[15.87, 84.13]$ percentile range respectively; the latter approximating the standard deviation for a normally distributed statistic.
 
 The \ptemcee\ package is a variant (a `fork' in open-source software development terms) of the \emcee\ package that has been extended to implement the parallel tempering algorithm for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher `temperatures', while individual modes are efficiently explored by chains at lower `temperatures' \cite{ptemcee}.  Having multiple populations in the parallel tempering algorithm allows the sampler to escape local maxima, greatly aiding it's ability to explore the most probable regions of the posterior.  \ptemcee\ is also able to estimate the log-evidence term (the denominator in Equation~\ref{eqn:2}), which is useful when calculating the Bayes factor for model comparison.
-%FIXME: reference for model selection...
 
 Parallelisation of the sampling is automatic, making full use of multi-core machines, and can use MPI on a cluster for yet greater parallelisation. Visualisation of the samples produced by MCMC sampling is performed using the \corner\ package for scatter plot matrices \cite{corner}, which gives a representation of the probability distribution function for each individual parameter and also the covariance for each pair of parameters. As will be seen later, the plot for two normally distributed and uncorrelated parameters is isotropic, while covariant parameters show significant anisotropy. An evaluation of the impact of hard bounds can also be made by looking for plots where the bounds are clearly truncating the distribution function, allowing the bounds to be re-evaluated and adjusted if necessary.
 
