@@ -2,6 +2,10 @@
 \RequirePackage{graphicx}
 \journalcode{J}
 
+% \usepackage[colorlinks,urlcolor=black]{hyperref}
+\renewcommand{\harvardurl}[1]{\url{#1}}
+\newcommand{\url}[1]{#1}
+
 \usepackage[utf8]{inputenc}
 
 \usepackage{amsmath}
@@ -237,5 +241,12 @@ We acknowledge Anton Le Brun (ANSTO) for the provision of the lipid bilayer data
 \textbf{refnx-paper.yml} - \conda\ environment file to reproduce the analysis environment in this paper.
 
 \bibliography{main}{}
-\bibliographystyle{iucr}
+
+% the provided iucr.bst doesn't match the journal style but a fixed version
+% is not redistributable.
+\IfFileExists{iucrdoi.bst}{
+  \bibliographystyle{iucrdoi}
+}{
+  \bibliographystyle{iucr}
+}
 \end{document}
