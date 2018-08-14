@@ -119,7 +119,7 @@ An \Objective\ can be given a \Transform\ object to permit fitting as $\log_{10}
 
 \subsection{Statistical comparison and model refinement}
 
-The \Objective\ statistics are used directly by the \CurveFitter\ class to perform least-square fitting with the functionality provided by the \SciPy\ package (DifferentialEvolution, Levenberg--Marquardt, LBFGSB - Limited Broyden--Fletcher--Goldfarb--Shanno with bounds).
+The \Objective\ statistics are used directly by the \CurveFitter\ class to perform least-square fitting with the functionality provided by the \SciPy\ package (Differential  Evolution, Levenberg--Marquardt, LBFGSB - Limited Broyden--Fletcher--Goldfarb--Shanno with bounds).
 \CurveFitter\ can also perform Bayesian Markov Chain Monte Carlo (MCMC) sampling of the system, examining the posterior probability distribution of the parameters, Equation~\ref{eqn:1}. The posterior distribution is proportional to the product of the prior probability and the likelihood (or the sum of the log-probabilities):
 %
 \begin{gather} 
