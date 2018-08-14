@@ -124,7 +124,7 @@ The \Objective\ statistics are used directly by the \CurveFitter\ class to perfo
 %
 \begin{gather} 
 \label{eqn:1}\ p(\theta | D, I) = \frac{p(\theta | I)\times p(D | \theta, I)}{p(D | I)}\\
-p(D | \theta, I) = -\frac{1}{2} \sum_n \left[\left(\frac{y_n - y_{\mathrm{model},n}} {\sigma_n}\right)^2 + \log(\sigma_n^2)\right]\label{eqn:2}
+p(D | \theta, I) = -\frac{1}{2} \sum_n \left[\left(\frac{y_n - y_{\mathrm{model},n}} {\sigma_n}\right)^2 + \log(2\pi\sigma_n^2)\right]\label{eqn:2}
 \end{gather}
 %
 The prior, $p(\theta | I)$, is the probability distribution function for a parameter, $\theta$, given pre-existing knowledge of the system, $I$, as outlined above.
