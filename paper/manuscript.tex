@@ -2,6 +2,10 @@
 \RequirePackage{graphicx}
 \journalcode{J}
 
+% \usepackage[colorlinks,urlcolor=black]{hyperref}
+\renewcommand{\harvardurl}[1]{\url{#1}}
+\newcommand{\url}[1]{#1}
+
 \usepackage[utf8]{inputenc}
 
 \usepackage{amsmath}
@@ -55,14 +59,14 @@
 \hyphenation{Lipid-Leaflet}
 
 \begin{synopsis}
-%TODO synopsis for ToC
+The refnx Python modules for neutron and X-ray reflectometry data analysis are
+introduced. An sample analysis illustrates a Bayesian approach using a
+Markov Chain Monte Carlo algorithm to understand the confidence in the fit parameters.
 \end{synopsis}
-
-%TODO en_GB or en_US?
 
 \begin{abstract}
 \refnx\ is a model-based neutron and X-ray reflectometry data analysis package written in Python. It is cross platform, and has been tested on Linux, macOS, and Windows. Its graphical user interface is browser-based, through a \Jupyter\ notebook.
-Model construction is modular, being composed from a series of components that each describe a subset of the interface, parameterised in terms of physically relevant parameters (volume fraction of a polymer, lipid area per molecule, etc). The model and data are used to create an objective, which is used to calculate residuals, log-likelihood, and log-prior probabilities of the system. Objectives are combined to perform co-refinement of multiple datasets, and mixed-area models. Prior knowledge of parameter values are encoded as probability distribution functions or bounds on all parameters in the system. Additional prior probability terms can be defined for sets of components, over and above those available from the parameters alone. Algebraic parameter constraints are available.
+Model construction is modular, being composed from a series of components that each describe a subset of the interface, parameterised in terms of physically relevant parameters (volume fraction of a polymer, lipid area per molecule, etc). The model and data are used to create an objective, which is used to calculate residuals, log-likelihood, and log-prior probabilities of the system. Objectives are combined to perform co-refinement of multiple datasets, and mixed-area models. Prior knowledge of parameter values is encoded as probability distribution functions or bounds on all parameters in the system. Additional prior probability terms can be defined for sets of components, over and above those available from the parameters alone. Algebraic parameter constraints are available.
 A choice of fitting approaches is available, including least-squares (global and gradient-based optimizers) and a Bayesian approach using Markov Chain Monte Carlo to investigate the posterior distribution of the model parameters. The Bayesian approach is useful in examining parameter covariances, model selection, and variability in the resulting scattering length density profiles.
 The package is designed to facilitate reproducible research; its use in \Jupyter\ notebooks, and subsequent distribution of those notebooks as supporting information, permits straightforward reproduction of analyses.
 \end{abstract}
@@ -76,11 +80,12 @@ Reproducibility in research is an underlying principle of science; unfortunately
 One example for addressing this reproducibility issue is the set of guidelines from the small-angle scattering community for the deposition of data and and associated models \cite{Trewhella:jc5010}.
 
 Here, we outline a new reflectometry analysis package, \refnx\ (version number 0.1 is used in this paper \cite{refnx}), that helps address the reproducibility issue for the reflectometry community\footnote{We do not mean that other programs are irreproducible, rather that the information provided in journal articles is often lacking.} by creating a scripted analysis workflow that is readily published alongside the publication, such as we have done with this paper (see the Supporting Information).
-The \refnx\ Python package is specifically designed for use in \Jupyter\ notebooks \cite{Kluyver:2016aa}, which provide a literate programming environment that mixes executable code cells, rich documentation of the steps that were performed, and the computational output. By including the analysis, as performed by the authors, in such a notebook, and appending it as supporting information along with the data, readers are empowered to replicate the exact data analysis and potentially extend the analysis, provided they have set up the same computing environment\cite{Millman2014}. Setting up the computing environment is simplified using the \conda\ package manager \cite{conda}, and an environment file (although other approaches are available).
+The \refnx\ Python package is specifically designed for use in \Jupyter\ notebooks \cite{Kluyver:2016aa}, which provide a literate programming environment that mixes executable code cells, rich documentation of the steps that were performed, and the computational output. By including the analysis, as performed by the authors, in such a notebook, and appending it as supporting information along with the data, readers are empowered to replicate the exact data analysis and potentially extend the analysis, provided they have set up the same computing environment \cite{Millman2014}. Setting up the computing environment is simplified using the \conda\ package manager \cite{conda}, and an environment file (although other approaches are available).
 
 \section{Method}
 
 \refnx\ is written in Python with an extensible object-oriented design, Figure~\ref{fig:components}, in which the user creates a model of the sample based on what they know about its composition, with refinement of that model against the data. As with \emph{Motofit} \cite{Nelson2006} it calculates reflectivity using the Abeles method \cite{Heavens1955} for specular reflection from a stratified medium.
+Detailed documentation for \refnx\ is available on-line\footnote{https://refnx.readthedocs.io/} and is distributed with the package.
 
 \begin{figure}
   \includegraphics[width=85mm]{components.pdf}
@@ -95,7 +100,7 @@ Any of the \emph{scipy.stats} \cite{Jones2001-2017} continuous distributions, or
 \subsection{Structure representation}
 
 The \Structure\ object represents the interfacial model, assembled from individual \Component\ objects in series. Each \Component\ represents a subset of the interface and selected attributes of the \Component\ can be described by physically relevant \Parameter\ objects. The simplest and most familiar \Component\ is a \Slab, which has a uniform scattering length density (SLD), thickness, roughness, and volume fraction of solvent. The simplest models are simply a series of \Slab\ objects.
-More sophisticated components include \LipidLeaflet\ (a lipid monolayer, or one-half of a lipid bilayer) and \Spline\ (for freeform modelling of an SLD profile using spline interpolation).
+More sophisticated components include \LipidLeaflet\ (a lipid monolayer, or one-half of a lipid bilayer) and \Spline\ (for free-form modelling of an SLD profile using spline interpolation).
 It is straightforward to develop/modify new components for different structural functionality, a consequence of the program design.
 
 To include further prior knowledge of the real sample into the model,
@@ -108,9 +113,9 @@ The \Structure\ object is used to construct a \ReflectModel\ object. This object
 
 \subsection{Model/data comparison}
 The \Objective\ class is the comparator of the predicted and measured reflectivities, using the \ReflectModel\ and a dataset, \DataD, to calculate $\chi^2$, log-likelihood (Equation~\ref{eqn:2}), log-prior, residuals, and the generative model.
-The \DataD\ object has \emph{x, y, y\_err, x\_err} attributes to represent $Q$, $R$, $\mathrm{d}R$, $\mathrm{d}Q$. As is standard for many reflectometry data files, the \DataD\ object reads a three or four column plain-text datafile. A three column dataset represents $Q$ (\si{\per\angstrom}), $R$, $\mathrm{d}R$ (1 standard deviation). A four column dataset represents $Q$, $R$, $\mathrm{d}R$, $\mathrm{d}Q$ (\si{\per\angstrom}). Extending \DataD\ would allow other formats to be read. One example of this could be a wavelength dispersive file using ($\Omega$, $\lambda$)-data instead of $Q$, such as that used in energy scanned X-ray reflectometry, or sometimes produced by wavelength dispersive neutron reflectometers. In such a case \ReflectModel\ could be subclassed to make full use of this energy dispersive information.
+The \DataD\ object has \emph{x, x\_err, y, y\_err} attributes to represent $Q$, $\mathrm{d}Q$, $R$, $\mathrm{d}R$. As is standard for many reflectometry data files, the \DataD\ object reads a three or four column plain-text datafile. A three column dataset represents $Q$ (\si{\per\angstrom}), $R$, $\mathrm{d}R$ (1 standard deviation). A four column dataset represents $Q$ (\si{\per\angstrom}), $R$, $\mathrm{d}R$, $\mathrm{d}Q$ (\si{\per\angstrom}). Extending \DataD\ would allow other formats to be read. One example of this could be a wavelength dispersive file using ($\Omega$, $\lambda$)-data instead of $Q$, such as that used in energy scanned X-ray reflectometry, or sometimes produced by wavelength dispersive neutron reflectometers. In such a case \ReflectModel\ could be subclassed to make full use of this energy dispersive information.
 
-An \Objective\ can be given a \Transform\ object to permit fitting as $\log_{10} R$ vs $Q$, $RQ^4$ vs $Q$; the default (no \Transform) is $R$ vs $Q$. Several \Objective\ objects can be combined to form a \GlobalObjective\ for co-refinement. The object-oriented nature allows \Parameter, \Component\ to be reused in different \Objective, and this is the basis for linking parameters between samples for co-refinement. For a comprehensive demonstration of multiple contrast co-refinement, see the annotated notebook in the supporting information.
+An \Objective\ can be given a \Transform\ object to permit fitting as $\log_{10} R$ vs $Q$, $RQ^4$ vs $Q$; the default (no \Transform) is $R$ vs $Q$. Several \Objective\ objects can be combined to form a \GlobalObjective\ for co-refinement. The object-oriented nature allows reuse of \Parameter and \Component\ objects, and this is the basis for linking parameters between samples for co-refinement. For a comprehensive demonstration of multiple contrast co-refinement, see the annotated notebook in the supporting information.
 
 \subsection{Statistical comparison and model refinement}
 
@@ -126,23 +131,19 @@ The prior, $p(\theta | I)$, is the probability distribution function for a param
 The likelihood (Equation~\ref{eqn:2}), $p(D | \theta, I)$, is the probability of the observed data, $D$, given the model parameters and other prior information. It is calculated from the measured data, $y_n$ (with uncertainties $\sigma_n$), and the generative model, $y_{\mathrm{model},n}$. The likelihoods that are used here assume that the measurement uncertainties are normally distributed, Equation~\ref{eqn:2}. However, other types of measurement uncertainties (e.g. Poissonian) could be implemented by a subclass of \Objective\ overriding the log-likelihood method.
 The model evidence, $p(D | I)$, is a normalising factor.
 
-The posterior probability, $p(\theta | I, D)$, describes the distribution of parameter values consistent with the data and prior information. In the simplest form, this is akin to a confidence interval for a parameter derived by least-squares analysis. However, when parameters are correlated, or two models give similar quality of fit ('multi-modality'), a simple confidence interval can be misleading.
-%FIXME - confidence intervals not used in Bayesian stats https://en.wikipedia.org/wiki/Credible_interval
- The posterior probability is derived by encoding the likelihood and prior distributions and then using an MCMC algorithm (via the \emcee\ and \ptemcee\ packages) to perform affine invariant ensemble sampling.\cite{emcee, ptemcee}
+The posterior probability, $p(\theta | I, D)$, describes the distribution of parameter values consistent with the data and prior information. In the simplest form, this is akin to a confidence interval for a parameter derived by least-squares analysis. However, when parameters are correlated, or two models give similar quality of fit (`multi-modality'), a simple confidence interval can be misleading.
+The posterior probability is derived by encoding the likelihood and prior distributions and then using an MCMC algorithm (via the \emcee\ and \ptemcee\ packages) to perform affine invariant ensemble sampling \cite{emcee, ptemcee}.
 At the end of an MCMC run, the parameter set possesses a number of samples (called a `chain'); the samples reveal the distribution and covariance of the parameters, the spread of the model-predicted measurements around the data, and in a reflectometry context, the range of SLD profiles that are consistent with the data.
-%FIXME the samples are not similarly plausible. 
 The chain statistics are used to update each \Parameter\ value, and assign a standard uncertainty. For the sampling, these represent the median and half the $[15.87, 84.13]$ percentile range respectively; the latter approximating the standard deviation for a normally distributed statistic.
 
 The \ptemcee\ package is a variant (a `fork' in open-source software development terms) of the \emcee\ package that has been extended to implement the parallel tempering algorithm for characterisation of multi-modal probability distributions; different modes can be traversed by chain populations at higher `temperatures', while individual modes are efficiently explored by chains at lower `temperatures' \cite{ptemcee}.  Having multiple populations in the parallel tempering algorithm allows the sampler to escape local maxima, greatly aiding it's ability to explore the most probable regions of the posterior.  \ptemcee\ is also able to estimate the log-evidence term (the denominator in Equation~\ref{eqn:2}), which is useful when calculating the Bayes factor for model comparison.
-%FIXME: reference for model selection...
 
 Parallelisation of the sampling is automatic, making full use of multi-core machines, and can use MPI on a cluster for yet greater parallelisation. Visualisation of the samples produced by MCMC sampling is performed using the \corner\ package for scatter plot matrices \cite{corner}, which gives a representation of the probability distribution function for each individual parameter and also the covariance for each pair of parameters. As will be seen later, the plot for two normally distributed and uncorrelated parameters is isotropic, while covariant parameters show significant anisotropy. An evaluation of the impact of hard bounds can also be made by looking for plots where the bounds are clearly truncating the distribution function, allowing the bounds to be re-evaluated and adjusted if necessary.
 
 \subsection{User interface}
 
 A significant motivation in the development of \refnx\ has been the facilitation of reproducible analysis by helping the user describe \emph{how} the analysis was performed. A few lines of computer code is an incredibly powerful description, conveying the details with precision that is hard to match in written text, as well as being incredibly concise.
-%FIXME this line seems redundant.
-%Analysis code can be constructed in \refnx\ in relatively few lines of code (as illustrated in the supporting information), with example analyses often being sufficient to complete the task.
+Example analyses within the \refnx\ code base are often sufficient to complete the task.
 These few lines of Python code can be further extended to produce publication quality plots saved and ready to import into the next publication.
 
 While Python is a popular language for instruction and for data analysis, meaning that the relatively few lines of code required to complete a \refnx\ analysis of a set of experiments is not a huge hurdle, a simpler graphical user interface (GUI) is also provided.
@@ -179,7 +180,7 @@ The \Jupyter\ notebook used for the analysis, \emph{lipid.ipynb}, is available i
 
 \includegraphics[width=85mm]{./supporting_information/d2o_sld_spread.pdf}
 
-\caption{a) Neutron reflectivity from a DMPC bilayer supported on a silicon crystal, measured at three contrasts, with 500 samples from the posterior distribution in grey and median of the distribution in red. Data for the hdmix and \ce{H_2O} contrast offset by 0.1 and 0.01 respectively. b) SLD profile of the \ce{D_2O} model showing 500 samples from the posterior distribution, as well as the median in red. It is seen that the uncertainty in the reflectivity at high $Q$ is associated with an uncertainty in SLD profile at the lipid-\ce{D2O} interface.}
+\caption{a) Neutron reflectivity from a DMPC bilayer supported on a silicon crystal, measured at three contrasts, with 500 samples from the posterior distribution in grey and median of the distribution in red. Data for the contrast matched (HD\textsubscript{mix}) and \ce{H2O} contrast offset by 0.1 and 0.01 respectively. b) SLD profile of the \ce{D2O} model showing 500 samples from the posterior distribution, as well as the median in red. It is seen that the uncertainty in the reflectivity at high $Q$ is associated with an uncertainty in SLD profile at the lipid-\ce{D2O} interface.}
 \end{figure}
 
 \begin{figure}
@@ -193,7 +194,7 @@ The \Jupyter\ notebook used for the analysis, \emph{lipid.ipynb}, is available i
 
 Each submodule in \refnx\ possesses its own unit testing code for checking that the functions and classes in the module operate correctly, both individually and collectively. For example, there are tests that check that the reflectivity of a model is calculated correctly, or that the behaviour of a function is correct for the different possible inputs and code paths through it. Since the test suite is an integral part of the package each installation is testable. In addition, there is a benchmarking suite to track changes in performance, specifically the speed of critical calculations, over time. This development approach is important to providing assurances to the community that the code is tested and works.
 
-The source code for \refnx\ is held in a publicly accessible version controlled git repository\cite{refnx}. The standard GitHub workflow is followed in which contributors create their own `fork' of the main \refnx\ repository, and create a feature branch to which they make modifications. They then submit a pull request (PR) against the main repository. The modifications made in the PR are checked on continuous integration (CI) web-services that run the test suite against a matrix of Python versions on the macOS, Linux and Windows operating systems. Features are merged into the main repository if all tests pass, and if manual code review concludes that the changes are scientifically correct, of sufficiently high standard, and useful. When a sufficient number of features have accumulated, a new release is made. Successive releases have an incrementing semantic version number which can be obtained from the installed package, with each release being given its own Digital Object Identifier (DOI).
+The source code for \refnx\ is held in a publicly accessible version controlled git repository \cite{refnx}. The standard GitHub workflow is followed in which contributors create their own `fork' of the main \refnx\ repository, and create a feature branch to which they make modifications. They then submit a pull request (PR) against the main repository. The modifications made in the PR are checked on continuous integration (CI) web-services that run the test suite against a matrix of Python versions on the macOS, Linux and Windows operating systems. Features are merged into the main repository if all tests pass, and if manual code review concludes that the changes are scientifically correct, of sufficiently high standard, and useful. When a sufficient number of features have accumulated, a new release is made. Successive releases have an incrementing semantic version number which can be obtained from the installed package, with each release being given its own Digital Object Identifier (DOI).
 
 The recommended way of using \refnx\ is from a \conda\ environment, which offers package, dependency and environment management \cite{conda}, using the pre-compiled distributables on the \refnx\ conda-forge channel. These distributables are made as part of the release process using the same CI web-services used to test the code. The matrix of distributables covers the major Python versions currently in use, across the macOS, Windows, and Linux operating systems. Alternatively the package can be installed from source, either directly from the git repository, or via \pip\ from the version uploaded to PyPI.\footnote{https://pypi.python.org/pypi/refnx; the installation command is `\texttt{pip install refnx}'} Building from source requires a C compiler and the \Cython\ and \NumPy\ packages to be installed; further dependencies should be installed to run the test suite to verify that compilation and installation was successful.
 
@@ -201,21 +202,19 @@ The recommended way of using \refnx\ is from a \conda\ environment, which offers
 
 \section{Comments on reproducibility of analyses}
 
-In order for a given scattering analysis to be fully reproducible by others, a general set of conditions need to be met:
+In order for a given scattering analysis to be fully reproducible by others, a general set of conditions need to be met \cite{Helliwell2017, Moeller2017a}:
 \begin{itemize}
   \item the processed datasets used in the analysis need to be deposited with a journal article, or be freely available. Ideally the raw datasets, and the means to create the processed datasets should also be made available.
   \item the exact software environment needs to be recreatable.
   \item the exact ordered set of steps taken during the analysis needs to be listed.
 \end{itemize} 
-Each of these points are often omitted in the literature. For example, the use of different software versions may change the output of an analysis, or the use of a GUI program may preclude recording the full set of steps, or options, applied by a user. Whilst it is unable to meet the first criterion by itself, the use of \refnx\ in a \Jupyter\ notebook can fulfil the other two requirements, providing a little care is taken. As we have already noted, the ordered set of steps to perform the analysis is the \Jupyter\ notebook in which the analysis was performed and this is an artefact able to be archived.
+Each of these points is often inadequately addressed in the literature. For example, the use of different software versions may change the output of an analysis, or the use of a GUI program may preclude recording the full set of steps, or options, applied by a user \cite{Chirigati2013}. Whilst it is unable to meet the first criterion by itself, the use of \refnx\ in a \Jupyter\ notebook can fulfil the other two requirements, providing a little care is taken. As we have already noted, the ordered set of steps to perform the analysis is the \Jupyter\ notebook in which the analysis was performed and this is an artefact able to be archived.
 
 The exact software environment can be recreated by noting down the versions of the software packages used during an analysis (\refnx, \SciPy, \NumPy, Python, etc). At a later date those exact versions can be installed in the same Python version using one of: the \conda\ package manager, by installing from the source at a given version tag in the git repository, or by \pip. \conda\ can use environment files to recreate a specific setup. An alternative way of recreating the environment is by using a virtual machine, or other container environment such as Docker; the strengths and weaknesses of various software distribution practices and the relationship with reproducible science has been discussed in detail elsewhere \cite{Moeller2017a}.
 
-The usefulness of open-source software in a git (or other version controlled) repository must be emphasised here. With closed source or proprietary software, the ability to return to a specific software version/environment can be frustrated, and different versions can have modifications that can unknowingly change the output of an analysis. In addition reduced accessibility (due to cost, etc) to the wider scientific community can also hinder reproducibility.
+The usefulness of open-source software in a git (or other version controlled) repository must be emphasised here \cite{Moeller2017a}. With closed source or proprietary software, the ability to return to a specific software version/environment can be frustrated, and different versions can have modifications that can unknowingly change the output of an analysis. In addition reduced accessibility (due to cost, etc) to the wider scientific community can also hinder reproducibility.
 
-Moreover, there are important ramifications for verifiability. \refnx\ is based on a fully open software stack, with good unit test coverage. The user can run tests for each component and inspect parts for correctness. For example, the behaviour of the reflectivity calculation in \refnx\ is checked from first principles in the test suite; and can be done now and in several years time. If problems are discovered, they can be corrected. With a closed source program such checking is harder, one has to examine the inputs/outputs of a black box without knowing what is happening in between, making it harder to find errors; one has to rely on trust. Whilst this may not be an issue for relatively simple calculations, it may be for complex algorithms, such as those involved with minimisation.
-%include citation
-%FIXME: this is a hypothesis, without being able to see the testing practices and codebases of proprietary programs it's hard to tell. However, given that open source software has bugs, it's safe to say that these will also occur in proprietary programs.
+Moreover, there are important ramifications for verifiability \cite{Chirigati2013}. \refnx\ is based on a fully open software stack, with good unit test coverage. The user can run tests for each component and inspect parts for correctness. For example, the behaviour of the reflectivity calculation in \refnx\ is checked from first principles in the test suite; and can be done now and in several years time. If problems are discovered, they can be corrected. With a closed source program such checking is harder, one has to examine the inputs/outputs of a black box without knowing what is happening in between, making it harder to find errors; one has to rely on trust. Whilst this may not be an issue for relatively simple calculations, it may be for complex algorithms, such as those involved with minimisation.
 
 \section{Conclusions}\label{conclusions}
 
@@ -236,6 +235,13 @@ We acknowledge Anton Le Brun (ANSTO) for the provision of the lipid bilayer data
 \textbf{raw\_data.zip} - raw files for the example datasets.\\
 \textbf{refnx-paper.yml} - \conda\ environment file to reproduce the analysis environment in this paper.
 
-\bibliography{main}{}
-\bibliographystyle{iucr}
+\bibliography{main}
+
+% the provided iucr.bst doesn't match the journal style but a fixed version
+% is not redistributable.
+\IfFileExists{iucrdoi.bst}{
+  \bibliographystyle{iucrdoi}
+}{
+  \bibliographystyle{iucr}
+}
 \end{document}
